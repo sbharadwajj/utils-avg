@@ -1,14 +1,12 @@
 '''
-voxel_size:
-1. 0.5 reduces the point cloud by 20 times (i.e 100000 --> 5000)
-2. 0.05 reduces the point cloud by 12 times (i.e 100000 --> 80000)
-
 run:
-`python downsample_pointcloud.py voxel_size input_folder save_folder start_name_file end_name_file ply`
+`python crop_fused_cloud.py input_folder save_folder pose_file radius_cropping semantic/none voxel/none save/viz`
 
 example:
-`python downsample_pointcloud.py 0.5 input_folder downsampled_train start_name_file 800 1200 ply`
+`python crop_fused_cloud.py data_3d_semantics/2013_05_28_drive_0000_sync/static/ tmp/ data_poses/2013_05_28_drive_0000_sync/poses.txt 70 semantic voxel save`
 
+my code
+`python crop_fused_cloud.py ../../voxel_data/fused_cloud/ ../../voxel_data/viz/ ../../data_poses/2013_05_28_drive_0000_sync/poses.txt 70 semantic voxel save`
 '''
 
 import open3d as o3d 
@@ -19,6 +17,7 @@ import struct
 import sys
 
 from read_semantic_labels import loadWindow
+from voxelize_pointcloud import voxelize
 
 def get_X_names(start, end):
     X_list = []
@@ -53,11 +52,15 @@ if __name__ == "__main__":
     assert(os.path.exists(input_folder))
     save_folder = sys.argv[2]
     radius = int(sys.argv[4])
+    poses = (np.loadtxt(sys.argv[3])).astype(np.float64)
+
+    if sys.argv[7] == 'save':
+        if not os.path.exists(save_folder):
+            os.mkdir(save_folder)
 
     for f in os.listdir(input_folder):
         input_path = os.path.join(input_folder, f)
         input_pcd = o3d.io.read_point_cloud(input_path)
-        poses = (np.loadtxt(sys.argv[3])).astype(np.float64)
         if sys.argv[5] == 'semantic':
             input_pcd = loadWindow(input_path, input_pcd)
         name_split = f.split('_')
@@ -65,10 +68,23 @@ if __name__ == "__main__":
         X_files = get_X_names(int(f_start), int(f_end))
 
         for x in X_files:
-            if x in poses[:,0]:
+            if x in poses[:,0]: #and x in [10, 100, 150, 200, 250, 400, 600, 800]:
                 pose_x = poses[poses[:,0]==x] # check the index of the pose
                 pose_matrix = pose_x[0,1:].reshape(3,4)
                 translation_vec = pose_matrix[:,3:].astype(np.float64)
-                cropped_pcd = crop_pointcloud(input_pcd, radius, translation_vec)
-                o3d.visualization.draw_geometries([cropped_pcd])
-                
+                cropped_pcd = crop_pointcloud(input_pcd, radius, translation_vec) # cropped pcd
+
+                if sys.argv[6] == 'voxel':
+                    voxel_grid = voxelize(cropped_pcd, 0.4)
+
+                if sys.argv[7] == 'save':
+                    vis = o3d.visualization.Visualizer()
+                    vis.create_window()
+                    vis.add_geometry(voxel_grid)
+                    vis.update_geometry(voxel_grid)
+                    vis.poll_events()
+                    vis.update_renderer()
+                    vis.capture_screen_image(os.path.join(save_folder,str(x) + "_voxel.png"))
+                    vis.destroy_window()
+                else:
+                    o3d.visualization.draw_geometries([voxel_grid])
