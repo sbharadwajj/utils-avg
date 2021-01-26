@@ -92,5 +92,4 @@ if __name__ == "__main__":
         input_path = os.path.join(input_folder, f)
         input_pcd = o3d.io.read_point_cloud(input_path)
         pcd = loadWindow(input_path, input_pcd)
-        import pdb;pdb.set_trace()
         o3d.visualization.draw_geometries([input_pcd])
