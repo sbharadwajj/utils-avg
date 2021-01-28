@@ -4,20 +4,16 @@ import os
 import sys
 
 
-def get_center(point_set):
-    center = np.expand_dims(np.mean(point_set, axis = 0), 0) # center
-    return center
-
 def points_pcd(point_set, center):
     pcd = o3d.geometry.PointCloud()
-    point_set = point_set - np.expand_dims(np.mean(point_set, axis = 0), 0) # center#center
-    dist = np.max(np.sqrt(np.sum(point_set ** 2, axis = 1)),0)
-    point_set = point_set / dist #scale
+    # point_set = point_set - center
+    # dist = np.max(np.sqrt(np.sum(point_set ** 2, axis = 1)),0)
+    # point_set = point_set / dist #scale
     pcd.points = o3d.utility.Vector3dVector(point_set) 
     return pcd
 
 path = sys.argv[1]
-save_path = path + '10images' 
+save_path = path + '8-imgs-optim-norm-removed' 
 if not os.path.exists(save_path):
     os.mkdir(save_path)
 # import pdb; pdb.set_trace()
@@ -25,7 +21,7 @@ for path in [path]:
     batch = np.load(path)
     
     for i in range(30):
-        center = get_center(batch['gt'][i])
+        center = batch['poses'][i]
         pcd_preds = points_pcd(batch['predictions'][i], center)
         pcd_inp = points_pcd(batch['data'][i], center)
         pcd_gt = points_pcd(batch['gt'][i], center)
