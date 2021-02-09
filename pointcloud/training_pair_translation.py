@@ -3,7 +3,7 @@ to save files, threshold = 1200, number of files = 2000
 python training_pair_translation.py ../../data_poses/2013_05_28_drive_0000_sync/poses.txt 2000 none 1200 ../../baseline_data/
 
 to viz plot of x,y of poses
-python training_pair_translation.py ../../data_poses/2013_05_28_drive_0000_sync/poses.txt 2000 save savefolder
+python training_pair_translation.py ../../data_poses/2013_05_28_drive_0000_sync/poses.txt 2000 plot savefolder
 '''
 
 import numpy as np
@@ -32,15 +32,16 @@ if __name__ == "__main__":
     y_axis = np.squeeze(translation_matrix[:n, 1:2, :]).tolist()
     
     if sys.argv[3] == 'plot':
-        fig_name = sys.argv[4] + "/x-y" + sys.argv[2] + "plot.jpg"
+        fig_name = sys.argv[5] + "/x-y" + sys.argv[2] + sys.argv[4] +"plot.jpg"
         fig = plt.figure()
         plt.plot(x_axis, y_axis, label="pose")
         plt.xlabel('x-axis of pose', fontsize=10)
         plt.ylabel('y-axis of pose', fontsize=10)
         fig.savefig(fig_name)
+        # plt.show()
     else:
-        savepath_train = sys.argv[5] + 'train_files_' + sys.argv[4] + '.dat'
-        savepath_test = sys.argv[5] + 'test_files_' + sys.argv[4] + '.dat'
+        savepath_train = sys.argv[5] + 'train_files_' + sys.argv[2] + sys.argv[4] + '.dat'
+        savepath_test = sys.argv[5] + 'test_files_' + sys.argv[2] + sys.argv[4] + '.dat'
         train_matrix = thresholdPoses(translation_matrix, threshold, pose_idx_matrix, train=True)
         test_matrix = thresholdPoses(translation_matrix, threshold, pose_idx_matrix, train=False)
         np.save(savepath_train, train_matrix)
