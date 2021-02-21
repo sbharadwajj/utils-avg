@@ -45,3 +45,8 @@ if __name__ == "__main__":
             voxel_grid = voxelize(input_pcd, voxel_size)
             print(voxel_grid.get_oriented_bounding_box)
             o3d.visualization.draw_geometries([voxel_grid])
+
+            # save_path = save_folder + f.split(".")[0] + ".binvox"
+            # print(save_path)
+            # import pdb;pdb.set_trace()
+            # o3d.io.write_voxel_grid(save_path, voxel_grid)

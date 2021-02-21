@@ -13,7 +13,7 @@ def points_pcd(point_set, center):
     return pcd
 
 path = sys.argv[1]
-save_path = path + '8-imgs-optim-norm-removed' 
+save_path = path + '15k-59' 
 if not os.path.exists(save_path):
     os.mkdir(save_path)
 # import pdb; pdb.set_trace()
