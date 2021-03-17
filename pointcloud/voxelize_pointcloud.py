@@ -18,9 +18,11 @@ import os
 import struct
 import sys
 
+
 # VOXELIZE HERE
 def voxelize(inputpcd, voxel_size):
     voxel = o3d.geometry.VoxelGrid.create_from_point_cloud(inputpcd,voxel_size)
+    import pdb;pdb.set_trace()
     return voxel
 
 def file_to_pcd(path):
@@ -34,19 +36,19 @@ if __name__ == "__main__":
     assert(os.path.exists(input_folder))
     save_folder = sys.argv[3]
     for f in os.listdir(input_folder):
-        if int(f.split('.')[0]) > int(sys.argv[4]) and int(f.split('.')[0]) < int(sys.argv[5]):
-            input_path = os.path.join(input_folder, f)
-            voxel_size = float(sys.argv[1])
-            if sys.argv[6] == 'ply':
-                input_pcd = o3d.io.read_point_cloud(input_path)
-            else:
-                input_pcd = file_to_pcd(input_path)
-            N = np.asarray(input_pcd.points).shape[0]
-            voxel_grid = voxelize(input_pcd, voxel_size)
-            print(voxel_grid.get_oriented_bounding_box)
-            o3d.visualization.draw_geometries([voxel_grid])
+        # if int(f.split('.')[0]) > int(sys.argv[4]) and int(f.split('.')[0]) < int(sys.argv[5]):
+        input_path = os.path.join(input_folder, f)
+        voxel_size = float(sys.argv[1])
+        if sys.argv[4] == 'ply':
+            input_pcd = o3d.io.read_point_cloud(input_path)
+        else:
+            input_pcd = file_to_pcd(input_path)
+        N = np.asarray(input_pcd.points).shape[0]
+        voxel_grid = voxelize(input_pcd, voxel_size)
+        print(voxel_grid.get_oriented_bounding_box)
+        o3d.visualization.draw_geometries([voxel_grid])
 
-            # save_path = save_folder + f.split(".")[0] + ".binvox"
-            # print(save_path)
-            # import pdb;pdb.set_trace()
-            # o3d.io.write_voxel_grid(save_path, voxel_grid)
+        # save_path = save_folder + f.split(".")[0] + ".binvox"
+        # print(save_path)
+        # import pdb;pdb.set_trace()
+        # o3d.io.write_voxel_grid(save_path, voxel_grid)

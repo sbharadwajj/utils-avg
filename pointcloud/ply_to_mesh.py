@@ -1,33 +1,29 @@
-import open3d as o3d
-import trimesh
 import numpy as np
+import pyvista as pv
+import open3d as o3d
+import os
 import sys
-import binrw_py
+from pyntcloud import PyntCloud
 
-pcd = o3d.io.read_point_cloud(sys.argv[1])
-pcd.estimate_normals()
+if __name__ == "__main__":
+    input_folder = sys.argv[1]
+    assert(os.path.exists(input_folder))
+
+    for f in os.listdir(input_folder):
+        input_path = os.path.join(input_folder, f)
+        pcd = o3d.io.read_point_cloud(input_path)
+        # cloud = pv.PolyData(np.asarray(pcd.points))
+        # # cloud.plot()
+
+        # volume = cloud.delaunay_3d(alpha=.2)
+        # shell = volume.extract_geometry()
+        # shell.save(f.split(".")[0] + ".ply")
+        # shell.plot()
 
 
-# estimate radius for rolling ball
-distances = pcd.compute_nearest_neighbor_distance()
-avg_dist = np.mean(distances)
-radius = 1.5 * avg_dist   
 
-mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
-           pcd,
-           o3d.utility.DoubleVector([radius, radius * 2]))
-
-# create the triangular mesh with the vertices and faces from open3d
-tri_mesh = trimesh.Trimesh(np.asarray(mesh.vertices), np.asarray(mesh.triangles),
-                          vertex_normals=np.asarray(mesh.vertex_normals))
-
-trimesh.convex.is_convex(tri_mesh)
-
-mm = trimesh.creation.box()
-voxx = mm.voxelized(pitch=0.015)
-vx = trimesh.exchange.binvox.export_binvox(voxx)
-
-voxels = binrw_py.read_as_3d_array(vx)
-voxels = voxels.data.astype(np.float32)
-import pdb;pdb.set_trace()
-export("391_mesh.stl")
+        # TO PyVista
+        cloud = PyntCloud.from_file(input_path)
+        converted_triangle_mesh = cloud.to_instance("pyvista", mesh=True)
+        converted_triangle_mesh.save(f.split(".")[0] + ".ply")
+        # converted_triangle_mesh.to_file(f.split(".")[0] + ".obj", internal=["mesh"])

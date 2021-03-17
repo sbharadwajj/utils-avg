@@ -13,9 +13,35 @@ import matplotlib.pyplot as plt
 import os
 import struct
 import sys
+import pandas as pd
+
+from pyntcloud import PyntCloud
+
+import binvox_rw
 
 from read_semantic_labels import loadWindow
 from voxelize_pointcloud import voxelize
+
+# def voxelize(points, x, y, z):
+#     cloud = PyntCloud(points, sep=" ", header=0, names=["x", "y", "z"])
+#     voxelgrid_id = cloud.add_structure("voxelgrid", n_x=x, n_y=y, n_z=z)
+#     voxelgrid = cloud.structures[voxelgrid_id]
+#     # voxelgrid.plot(d=3, mode="density", cmap="hsv")
+
+#     x_cords = voxelgrid.voxel_x
+#     y_cords = voxelgrid.voxel_y
+#     z_cords = voxelgrid.voxel_z
+
+#     voxel = np.zeros((x, y, z)).astype(np.bool)
+
+#     for x, y, z in zip(x_cords, y_cords, z_cords):
+#         voxel[x][y][z] = True
+
+#     with open("00000.binvox", 'wb') as f:
+#         v = binvox_rw.Voxels(voxel, (x, y, z), (0, 0, 0), 1, 'xyz')
+#         v.write(f)
+#     return voxel
+
 
 def get_X_names(start, end):
     X_list = []
@@ -43,7 +69,7 @@ def crop_pointcloud(cloud, r, ref):
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(bounding_box)
     pcd.colors = o3d.utility.Vector3dVector(colors_box)
-    return pcd
+    return pcd, bounding_box
 
 if __name__ == "__main__":
     input_folder = sys.argv[1]
@@ -66,13 +92,14 @@ if __name__ == "__main__":
         X_files = get_X_names(int(f_start), int(f_end))
 
         for x in X_files:
-            if x in poses[:,0]: #and x in [10, 100, 150, 200, 250, 400, 600, 800]:
+            if x in poses[:,0] and x in [10, 100, 150, 200, 250, 400, 600, 800]:
                 pose_x = poses[poses[:,0]==x] # check the index of the pose
                 pose_matrix = pose_x[0,1:].reshape(3,4)
                 translation_vec = pose_matrix[:,3:].astype(np.float64)
-                cropped_pcd = crop_pointcloud(input_pcd, radius, translation_vec) # cropped pcd
-
+                cropped_pcd, cropped_points = crop_pointcloud(input_pcd, radius, translation_vec) # cropped pcd
+                o3d.io.write_point_cloud(os.path.join(save_folder,str(x)+"_cropped.ply"), cropped_pcd)
                 if sys.argv[6] == 'voxel':
+                    # Bug 
                     voxel_grid = voxelize(cropped_pcd, 0.4)
 
                 if sys.argv[7] == 'save':
@@ -84,5 +111,5 @@ if __name__ == "__main__":
                     vis.update_renderer()
                     vis.capture_screen_image(os.path.join(save_folder,str(x) + "_voxel.png"))
                     vis.destroy_window()
-                else:
-                    o3d.visualization.draw_geometries([voxel_grid])
+                # else:
+                #     o3d.visualization.draw_geometries([voxel_grid])
