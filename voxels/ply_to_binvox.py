@@ -25,7 +25,6 @@ def voxelize(pcd, x, y, z):
     x_cords = voxelgrid.voxel_x
     y_cords = voxelgrid.voxel_y
     z_cords = voxelgrid.voxel_z
-    # import pdb;pdb.set_trace()
     voxel = np.zeros((x, y, z)).astype(np.bool)
 
     for x, y, z in zip(x_cords, y_cords, z_cords):
