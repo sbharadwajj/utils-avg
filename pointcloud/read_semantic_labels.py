@@ -91,5 +91,14 @@ if __name__ == "__main__":
     for f in os.listdir(input_folder):
         input_path = os.path.join(input_folder, f)
         input_pcd = o3d.io.read_point_cloud(input_path)
+
+        # R = np.asarray([(-1,0,0),(0,1,0),(0,0,1)]).astype(np.float64)
+        # R_2 = np.asarray([(0,0,1),(0,1,0),(-1,0,0)]).astype(np.float64)
+        # center_gt = input_pcd.get_center().astype(np.float64)
+        # input_pcd.rotate(R, center_gt)
+
+        o3d.visualization.draw_geometries([input_pcd])
         pcd = loadWindow(input_path, input_pcd)
+
+        # input_pcd.rotate(R, center_gt)
         o3d.visualization.draw_geometries([input_pcd])
